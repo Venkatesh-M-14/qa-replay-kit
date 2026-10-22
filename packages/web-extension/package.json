@@ -1,7 +1,7 @@
 {
   "name": "@rrweb/web-extension",
   "private": true,
-  "version": "2.1.7",
+  "version": "2.2.0",
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
   "author": "rrweb Core Team <maintainers@rrweb.com>",
   "license": "MIT",
@@ -19,7 +19,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.1.7",
+    "@rrweb/types": "^2.2.0",
     "@types/chrome": "^0.0.287",
     "@types/react-dom": "^18.0.6",
     "@types/semver": "^7.5.8",
@@ -37,8 +37,8 @@
     "@chakra-ui/react": "^2.3.4",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
-    "@rrweb/rrweb-plugin-console-record": "^2.1.7",
-    "@rrweb/rrweb-plugin-network-record": "^2.1.7",
+    "@rrweb/rrweb-plugin-console-record": "^2.2.0",
+    "@rrweb/rrweb-plugin-network-record": "^2.2.0",
     "@tanstack/react-table": "^8.5.22",
     "framer-motion": "^7.3.6",
     "idb": "^7.1.1",
@@ -48,7 +48,7 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
     "react-router-dom": "^6.4.1",
-    "rrweb": "^2.1.7",
-    "rrweb-player": "^2.1.7"
+    "rrweb": "^2.2.0",
+    "rrweb-player": "^2.2.0"
   }
 }
