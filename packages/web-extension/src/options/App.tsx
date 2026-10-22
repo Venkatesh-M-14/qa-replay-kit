@@ -1,31 +1,18 @@
 import { Route, Routes } from 'react-router-dom';
-import SidebarWithHeader from '~/components/SidebarWithHeader';
-import { FiList, FiSettings } from 'react-icons/fi';
-import { Box } from '@chakra-ui/react';
+import { AppShell } from '~/components/AppShell';
+import { PageHeader } from '~/components/ui';
+import { SettingsForm } from './SettingsForm';
 
 export default function App() {
   return (
-    <SidebarWithHeader
-      title="Settings"
-      headBarItems={[
-        {
-          label: 'Sessions',
-          icon: FiList,
-          href: '/pages/index.html#',
-        },
-        {
-          label: 'Settings',
-          icon: FiSettings,
-          href: '#',
-        },
-      ]}
-      sideBarItems={[]}
-    >
-      <Box p="10">
-        <Routes>
-          <Route path="/" element={<></>} />
-        </Routes>
-      </Box>
-    </SidebarWithHeader>
+    <AppShell active="settings">
+      <PageHeader
+        title="Settings"
+        description="What the extension records and where it sends sessions. Changes apply from the next recording."
+      />
+      <Routes>
+        <Route path="/" element={<SettingsForm />} />
+      </Routes>
+    </AppShell>
   );
 }

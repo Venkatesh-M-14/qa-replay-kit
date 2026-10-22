@@ -1,0 +1,17 @@
+{
+  "name": "rrweb-issue-server",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Local log server that stores rrweb extension sessions, issues and media in SQLite and drafts Jira tickets",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.10.0"
+  }
+}

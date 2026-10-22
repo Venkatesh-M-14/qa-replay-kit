@@ -1,8 +1,10 @@
 import Browser from 'webextension-polyfill';
 import { nanoid } from 'nanoid';
-import type { eventWithTime } from '@rrweb/types';
+import { EventType, type eventWithTime } from '@rrweb/types';
 import Channel from '~/utils/channel';
 import {
+  CustomTag,
+  DEFAULT_SETTINGS,
   EventName,
   LocalDataKey,
   MessageName,
@@ -26,7 +28,7 @@ void (async () => {
   const result =
     ((await Browser.storage.sync.get(SyncDataKey.settings)) as SyncData) ||
     undefined;
-  const defaultSettings: Settings = {};
+  const defaultSettings: Settings = { ...DEFAULT_SETTINGS };
   let settings = defaultSettings;
   if (result && result.settings) {
     setDefaultSettings(result.settings, defaultSettings);
@@ -194,6 +196,21 @@ void (async () => {
 
   channel.on(EventName.ContentScriptEmitEvent, (data) => {
     events.push(data as eventWithTime);
+  });
+
+  // Feedback given while recording is marked in the recording, so the log
+  // server can link the feedback to this moment of the replay.
+  channel.on(EventName.FeedbackSubmitted, (data) => {
+    if (recorderStatus.status !== RecorderStatus.RECORDING) return;
+    const { feedbackId, category } = data as {
+      feedbackId: string;
+      category: string;
+    };
+    events.push({
+      type: EventType.Custom,
+      data: { tag: CustomTag.Feedback, payload: { feedbackId, category } },
+      timestamp: Date.now(),
+    });
   });
 
   // When tab is changed during the recording process, pause recording in the old tab and start a new one in the new tab.

@@ -414,6 +414,7 @@ function initXhrObserver(
               // https://github.com/rrweb-io/rrweb/pull/1105#issuecomment-1953808336
               const requests = prepareRequestWithoutPerformance(
                 req,
+                xhr.status,
                 networkRequest,
               );
               cb({ requests });
@@ -507,6 +508,7 @@ function initFetchObserver(
               // https://github.com/rrweb-io/rrweb/pull/1105#issuecomment-1953808336
               const requests = prepareRequestWithoutPerformance(
                 req,
+                res?.status,
                 networkRequest,
               );
               cb({ requests });
@@ -601,11 +603,13 @@ function prepareRequest(
 
 function prepareRequestWithoutPerformance(
   req: Request,
+  status: number | undefined,
   networkRequest: Partial<NetworkRequest>,
 ): NetworkRequest[] {
   const request: NetworkRequest = {
     name: req.url,
     method: req.method,
+    status,
     requestHeaders: networkRequest.requestHeaders,
     requestBody: networkRequest.requestBody,
     responseHeaders: networkRequest.responseHeaders,

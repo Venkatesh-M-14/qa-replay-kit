@@ -12,6 +12,8 @@ import {
 } from '~/types';
 import Channel from '~/utils/channel';
 import { isInCrossOriginIFrame } from '~/utils';
+import { getSettings } from '~/utils/settings';
+import type { RecorderConfig } from '~/types';
 
 const channel = new Channel();
 
@@ -25,15 +27,20 @@ void (() => {
     ) => {
       if (event.source !== window) return;
       if (event.data.message === MessageName.RecordScriptReady)
-        window.postMessage(
-          {
-            message: MessageName.StartRecord,
-            config: {
-              recordCrossOriginIframes: true,
-            },
-          },
-          location.origin,
-        );
+        void getSettings().then((settings) => {
+          const config: RecorderConfig = {
+            maskAllInputs: settings.maskAllInputs,
+            maskTextSelector: settings.maskTextSelector,
+            blockSelector: settings.blockSelector,
+            recordCanvas: settings.recordCanvas,
+            captureConsole: settings.captureConsole,
+            captureNetworkBodies: settings.captureNetworkBodies,
+          };
+          window.postMessage(
+            { message: MessageName.StartRecord, config },
+            location.origin,
+          );
+        });
     },
   );
   if (isInCrossOriginIFrame()) {

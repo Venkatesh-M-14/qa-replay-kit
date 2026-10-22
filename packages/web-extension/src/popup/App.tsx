@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Browser from 'webextension-polyfill';
 import {
   Box,
+  Button,
   Flex,
   IconButton,
   Link,
@@ -9,13 +10,20 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react';
-import { FiSettings, FiList, FiPause, FiPlay } from 'react-icons/fi';
+import {
+  FiSettings,
+  FiList,
+  FiPause,
+  FiPlay,
+  FiMessageSquare,
+} from 'react-icons/fi';
 import Channel from '~/utils/channel';
 import { LocalDataKey, RecorderStatus, EventName } from '~/types';
 import type { LocalData, Session } from '~/types';
 
 import { CircleButton } from '~/components/CircleButton';
 import { Timer } from './Timer';
+import { FeedbackForm } from './FeedbackForm';
 const RECORD_BUTTON_SIZE = 3;
 
 const channel = new Channel();
@@ -25,6 +33,7 @@ export function App() {
   const [errorMessage, setErrorMessage] = useState('');
   const [startTime, setStartTime] = useState(0);
   const [newSession, setNewSession] = useState<Session | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   useEffect(() => {
     const parseStatusData = (data: LocalData[LocalDataKey.recorderStatus]) => {
@@ -173,6 +182,22 @@ export function App() {
           <br />
           Maybe refresh your current tab.
         </Text>
+      )}
+      {showFeedback ? (
+        <FeedbackForm
+          recording={status === RecorderStatus.RECORDING}
+          onDone={() => setShowFeedback(false)}
+        />
+      ) : (
+        <Button
+          mt={3}
+          size="sm"
+          variant="outline"
+          leftIcon={<FiMessageSquare />}
+          onClick={() => setShowFeedback(true)}
+        >
+          Give feedback
+        </Button>
       )}
     </Flex>
   );

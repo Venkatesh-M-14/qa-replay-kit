@@ -8,12 +8,24 @@
     "incremental": true,
     "resolveJsonModule": true,
     "paths": {
-      "~/*": ["src/*"]
+      "~/*": [
+        "src/*"
+      ]
     },
     "jsx": "react-jsx"
   },
-  "exclude": ["dist", "node_modules", "vite.config.ts"],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "vite.config.ts"
+  ],
   "references": [
+    {
+      "path": "../plugins/rrweb-plugin-console-record"
+    },
+    {
+      "path": "../plugins/rrweb-plugin-network-record"
+    },
     {
       "path": "../rrweb"
     },

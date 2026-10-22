@@ -9,8 +9,49 @@ export type SyncData = {
 };
 
 export type Settings = {
-  //
+  /** Replace every typed value with asterisks in the recording. */
+  maskAllInputs: boolean;
+  /** CSS selector whose text is masked, e.g. ".balance, [data-private]". */
+  maskTextSelector: string;
+  /** CSS selector of elements that are not recorded at all. */
+  blockSelector: string;
+  /** Record <canvas> content (charts) as images; larger recordings. */
+  recordCanvas: boolean;
+  /** Capture console output. */
+  captureConsole: boolean;
+  /** Capture request/response headers and bodies (redacted). */
+  captureNetworkBodies: boolean;
+  /** Local issue server the sessions and feedback are sent to. */
+  logServerUrl: string;
 };
+
+export const DEFAULT_SETTINGS: Settings = {
+  maskAllInputs: false,
+  maskTextSelector: '',
+  blockSelector: '',
+  recordCanvas: false,
+  captureConsole: true,
+  captureNetworkBodies: true,
+  logServerUrl: 'http://localhost:4000',
+};
+
+/** Recorder options sent from the content script to the injected recorder. */
+export type RecorderConfig = Pick<
+  Settings,
+  | 'maskAllInputs'
+  | 'maskTextSelector'
+  | 'blockSelector'
+  | 'recordCanvas'
+  | 'captureConsole'
+  | 'captureNetworkBodies'
+>;
+
+/** Custom event tags the extension adds to recordings. */
+export enum CustomTag {
+  Navigation = 'navigation',
+  PageMetrics = 'page-metrics',
+  Feedback = 'feedback',
+}
 
 export enum LocalDataKey {
   recorderStatus = 'recorder_status',
@@ -58,6 +99,7 @@ export enum EventName {
   StopButtonClicked = 'stop-recording-button-clicked',
   PauseButtonClicked = 'pause-recording-button-clicked',
   ResumeButtonClicked = 'resume-recording-button-clicked',
+  FeedbackSubmitted = 'feedback-submitted',
 }
 
 // all message names for postMessage API
