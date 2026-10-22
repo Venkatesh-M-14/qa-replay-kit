@@ -12,7 +12,7 @@ import { CustomTag } from '~/types';
 
 const T0 = 1_700_000_000_000;
 const ev = (t: number, event: Record<string, unknown>) =>
-  ({ ...event, timestamp: T0 + t }) as unknown as eventWithTime;
+  ({ ...event, timestamp: T0 + t } as unknown as eventWithTime);
 
 const meta = (t: number, href: string) =>
   ev(t, { type: EventType.Meta, data: { href, width: 1280, height: 800 } });
@@ -140,11 +140,20 @@ describe('buildReport', () => {
     const report = buildReport([
       meta(0, URL_),
       snapshot(1),
-      consoleLog(10, 'error', ['Auth failed', axiosError], [
-        'handleError (https://app.test/src/api.ts?t=123:12:3)',
-        'node_modules/axios/lib/core.js:1:1',
-      ]),
-      request(20, { name: 'https://api.test/profile?x=1', method: 'GET', status: 401 }),
+      consoleLog(
+        10,
+        'error',
+        ['Auth failed', axiosError],
+        [
+          'handleError (https://app.test/src/api.ts?t=123:12:3)',
+          'node_modules/axios/lib/core.js:1:1',
+        ],
+      ),
+      request(20, {
+        name: 'https://api.test/profile?x=1',
+        method: 'GET',
+        status: 401,
+      }),
       request(30, {
         name: 'https://api.test/profile?x=2',
         method: 'GET',
@@ -214,7 +223,9 @@ describe('buildReport', () => {
       custom(300, CustomTag.Navigation, { href: 'https://app.test/settings' }),
       metrics(400, 'https://app.test/settings', 0),
     ]);
-    expect(report.pageViews.map((v) => [v.page, v.maxDepth, v.pageHeight])).toEqual([
+    expect(
+      report.pageViews.map((v) => [v.page, v.maxDepth, v.pageHeight]),
+    ).toEqual([
       ['/dashboard', 2000, 2400],
       ['/settings', 800, 2400],
     ]);
@@ -222,7 +233,11 @@ describe('buildReport', () => {
   });
 
   it('collapses reloads of the same page into one step', () => {
-    const report = buildReport([meta(0, URL_), meta(100, URL_), meta(200, URL_)]);
+    const report = buildReport([
+      meta(0, URL_),
+      meta(100, URL_),
+      meta(200, URL_),
+    ]);
     expect(report.steps).toHaveLength(1);
     expect(report.steps[0].repeat).toBe(3);
   });
@@ -233,7 +248,12 @@ describe('buildReport', () => {
       snapshot(1),
       ev(10, {
         type: EventType.IncrementalSnapshot,
-        data: { source: IncrementalSource.Input, id: 5, text: 'hunter2', isChecked: false },
+        data: {
+          source: IncrementalSource.Input,
+          id: 5,
+          text: 'hunter2',
+          isChecked: false,
+        },
       }),
     ]);
     expect(JSON.stringify(report.steps)).not.toContain('hunter2');
@@ -275,9 +295,12 @@ describe('eventsForReplay', () => {
     const replay = eventsForReplay(events, buildReport(events));
     expect(
       replay.some(
-        (e) => e.type === EventType.Custom && e.data.tag === CustomTag.PageMetrics,
+        (e) =>
+          e.type === EventType.Custom && e.data.tag === CustomTag.PageMetrics,
       ),
     ).toBe(false);
-    expect(replay.filter((e) => e.type === EventType.Annotation)).toHaveLength(1);
+    expect(replay.filter((e) => e.type === EventType.Annotation)).toHaveLength(
+      1,
+    );
   });
 });

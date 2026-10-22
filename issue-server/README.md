@@ -15,13 +15,13 @@ feedback to the address set in its Settings page (default `http://localhost:4000
 
 ## Pages
 
-| Page | What it shows |
-|---|---|
-| Overview | Sessions, errors, clicks, scroll depth, feedback and rating, recurring errors. “—” means no data, not zero. |
-| Sessions | Search and filter (date, page visited, errors only). Each session has a Jira draft, issues, pages visited and linked feedback. |
+| Page     | What it shows                                                                                                                   |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Overview | Sessions, errors, clicks, scroll depth, feedback and rating, recurring errors. “—” means no data, not zero.                     |
+| Sessions | Search and filter (date, page visited, errors only). Each session has a Jira draft, issues, pages visited and linked feedback.  |
 | Heatmaps | Per page and screen size: clicks drawn over a snapshot of the page, scroll depth, most clicked elements, links to the sessions. |
-| Feedback | Inbox with filters, status, internal notes, screenshot, link to the replay moment, Jira draft, CSV export. |
-| Settings | Stored data and retention (delete sessions older than N days). |
+| Feedback | Inbox with filters, status, internal notes, screenshot, link to the replay moment, Jira draft, CSV export.                      |
+| Settings | Stored data and retention (delete sessions older than N days).                                                                  |
 
 All pages share the date filter.
 
@@ -50,18 +50,18 @@ All pages share the date filter.
 
 ## API
 
-| Method | Path | |
-|---|---|---|
-| POST | `/api/sessions` | `{ session, events, report, reportHtml, userAgent }` |
-| GET | `/api/sessions` | filters: `from`, `to` (YYYY-MM-DD), `q`, `page`, `errors=1` |
-| GET | `/api/sessions/:id` | session with issues |
-| GET | `/api/sessions/:id/events` | replayable events (no console/network capture) |
-| GET | `/api/sessions/:id/jira` | Jira draft |
-| DELETE | `/api/sessions/:id` | remove session, its rows and media |
-| GET | `/api/issues` | errors grouped across sessions |
-| GET | `/api/heatmaps` | pages with clicks; with `page` (and `device`): heatmap data |
-| GET | `/api/overview` | overview numbers |
-| POST | `/api/feedback` | submit feedback (idempotent by `id`) |
-| GET | `/api/feedback`, `/api/feedback.csv` | filters: `from`, `to`, `q`, `status`, `category`, `rating` |
-| GET/PATCH | `/api/feedback/:id` | read; update `status` and `notes` |
-| POST | `/api/retention` | `{ days }` deletes older sessions |
+| Method    | Path                                 |                                                             |
+| --------- | ------------------------------------ | ----------------------------------------------------------- |
+| POST      | `/api/sessions`                      | `{ session, events, report, reportHtml, userAgent }`        |
+| GET       | `/api/sessions`                      | filters: `from`, `to` (YYYY-MM-DD), `q`, `page`, `errors=1` |
+| GET       | `/api/sessions/:id`                  | session with issues                                         |
+| GET       | `/api/sessions/:id/events`           | replayable events (no console/network capture)              |
+| GET       | `/api/sessions/:id/jira`             | Jira draft                                                  |
+| DELETE    | `/api/sessions/:id`                  | remove session, its rows and media                          |
+| GET       | `/api/issues`                        | errors grouped across sessions                              |
+| GET       | `/api/heatmaps`                      | pages with clicks; with `page` (and `device`): heatmap data |
+| GET       | `/api/overview`                      | overview numbers                                            |
+| POST      | `/api/feedback`                      | submit feedback (idempotent by `id`)                        |
+| GET       | `/api/feedback`, `/api/feedback.csv` | filters: `from`, `to`, `q`, `status`, `category`, `rating`  |
+| GET/PATCH | `/api/feedback/:id`                  | read; update `status` and `notes`                           |
+| POST      | `/api/retention`                     | `{ days }` deletes older sessions                           |
