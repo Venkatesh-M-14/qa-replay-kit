@@ -1,264 +1,128 @@
-<p align="center">
-  <img width="100px" height="100px" src="https://www.rrweb.io/favicon.png">
-</p>
-<p align="center">
-  <a href="https://www.rrweb.io/" style="font-weight: bold">Try rrweb</a>
-</p>
+# QA Replay Kit
 
-# rrweb
+A QA toolkit built on [rrweb](https://github.com/rrweb-io/rrweb). Testers record a
+session in the browser and get a replay with its errors, console output and network
+requests. From that they can write a Jira draft, see heatmaps and collect feedback, all
+in a local dashboard. It runs on one machine and needs no accounts or cloud services.
 
-**[(new!) rrweb cloud - hosted rrweb backend is now available](https://rrweb.com/)**
+It has two parts:
 
-[![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-41pxl6epj-~N2YyGQxvI5r3V6d59it8w)
-[![Twitter Follow](https://img.shields.io/badge/twitter-@rrweb__io-teal.svg?logo=twitter)](https://twitter.com/rrweb_io)
-[![Reddit](https://img.shields.io/badge/reddit-r/rrweb-teal.svg?logo=reddit)](https://www.reddit.com/r/rrweb)
-![record bundle size](https://img.shields.io/bundlejs/size/%40rrweb/record)
-![replay bundle size](https://img.shields.io/bundlejs/size/%40rrweb/replay)
-[![CDN catalog](https://img.shields.io/badge/CDN-catalog-teal)](https://cdn.rrweb.com/catalog.json)
+- **Browser extension** ([packages/web-extension](packages/web-extension/)): records the
+  session, shows a debug report next to the replay, and collects tester feedback.
+- **Issue server** ([issue-server](issue-server/)): a local dashboard that stores the
+  sessions in SQLite and shows overview numbers, sessions, heatmaps, feedback and Jira
+  drafts.
 
-[中文文档](./README.zh_CN.md)
+## Features
 
-rrweb refers to 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
+**Extension**
 
-## Guide
+- Record, pause and resume from the popup. The recording follows navigation and tab
+  changes.
+- Debug panel next to the replay with four tabs: **Issues**, **Steps**, **Console** and
+  **Network**. Click an entry to jump the replay to that moment.
+- Issue detection: console errors and failed requests are grouped. Each issue is linked
+  to the user action that probably caused it.
+- Secrets are redacted: tokens, cookies, passwords and API keys are removed from headers
+  and bodies before the report is built.
+- A standalone HTML bug report you can download or attach.
+- A feedback form in the popup with a rating, a category and a screenshot. The
+  feedback is pinned to that moment of the recording.
+- Privacy settings: mask all inputs, mask text by CSS selector, block elements, and turn
+  canvas, console or network-body capture on or off.
 
-[**📚 Read the rrweb guide here. 📚**](https://rrweb.com/docs/guide)
+**Issue server dashboard** (`http://localhost:4000`)
 
-[**🍳 Recipes 🍳**](https://rrweb.com/docs/recipes/)
+| Page     | What it shows                                                                                         |
+| -------- | ----------------------------------------------------------------------------------------------------- |
+| Overview | Sessions, errors, clicks, scroll depth, feedback, rating and errors that keep coming back.            |
+| Sessions | Search and filters. Each session has its replay, issues, pages visited, feedback and a Jira draft.    |
+| Heatmaps | Clicks over a snapshot of each page, by screen size, plus scroll depth and the most clicked elements. |
+| Feedback | Inbox with status, notes, screenshots, a link to the replay moment, a Jira draft and CSV export.      |
+| Settings | Stored data and retention (delete sessions older than N days).                                        |
 
-[**📺 Presentation:** Hacking the browser to digital twin your users 📺](https://youtu.be/cWxpp9HwLYw)
+The server never sends anything to Jira. Each draft has a title, steps to reproduce,
+environment details and attachments (`replay.html`, `report.html`), ready to paste into
+Jira.
 
-## Project Structure
+## Quick start
 
-rrweb is composed of the following principal parts:
+Requirements: Node.js 18 or newer, and Yarn 1.
 
-- **[rrweb-snapshot](packages/rrweb-snapshot/)**, including both snapshot and rebuilding features. The snapshot is used to convert the DOM and its state into a serializable data structure with a unique identifier; the rebuilding feature is to rebuild the snapshot into corresponding DOM. This package can be used on it's own to provide a static HTML based 'screenshot' of the current web page state, with all Javascript deactivated.
-- **[record](packages/record)**, builds on an initial snapshot to record all HTML state changes (mutations) and user interactions as the user browses the web page. Multiple page loads can be chained together into a single recording.
-- **[replay](packages/replay)**, rebuilds the inital snapshot and replays the list or stream of subsequent events to show a 'session replay'
-- **[rrweb-player](packages/rrweb-player/)**, a player UI on top of the replay package to provide GUI-based functions like pause, fast-forward, drag and drop to play at any time.
+```bash
+git clone https://github.com/Venkatesh-M-14/qa-replay-kit.git
+cd qa-replay-kit
+yarn install
+```
 
-## Roadmap
+**1. Start the issue server**
 
-- ✅ [storage engine: do deduplication on a large number of rrweb sessions](https://rrweb.com)
-- Token efficient AI session replay format (in progress)
-- provide plugins via the new plugin API, including:
-  - XHR plugin
-  - fetch plugin
-  - GraphQL plugin
-  - ...
+```bash
+cd issue-server
+npm install
+npm start            # http://localhost:4000
+```
 
-## Internal Design
+`PORT`, `HOST` and `DATA_DIR` change the defaults. The server listens on `127.0.0.1` only
+because it has no login.
 
-- [serialization](./docs/serialization.md)
-- [incremental snapshot](./docs/observer.md)
-- [replay](./docs/replay.md)
-- [sandbox](./docs/sandbox.md)
+**2. Build and load the extension**
 
-## Contribute Guide
+```bash
+cd packages/web-extension
+yarn build:chrome    # or: yarn build:firefox
+```
 
-Since we want the record and replay sides to share a strongly typed data structure, rrweb is developed with typescript which provides stronger type support.
+- In Chrome, open `chrome://extensions` and turn on Developer mode. Click **Load
+  unpacked** and pick `packages/web-extension/dist/chrome`.
+- If you run the server at another address, set it under **Log server → Address** in the
+  extension's Settings page. The default is `http://localhost:4000`.
 
-[Typescript handbook](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
+For development with auto-reload, run `yarn dev:chrome` or `yarn dev:firefox`.
 
-For the latest setup, testing, and pull request workflow, see [Contributing to rrweb](./CONTRIBUTING.md).
+**3. Record**
 
-In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
+Start a recording from the popup, use the app, then stop. Open the session to see the
+replay and debug panel. Click **Save to log server** to send it to the dashboard.
 
-[Using the REPL tool](./guide.md#REPL-tool)
+## Data and privacy
 
-## Sponsors
+Everything stays on your machine, in `issue-server/data/`:
 
-[Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
+- `issues.db` (SQLite): sessions, issues, clicks, page views and feedback.
+- `media/<session id>/`: `replay.html` (no console or network data, safe to share),
+  `report.html`, `recording.json.gz` (the raw recording, keep it local) and Jira draft
+  files.
+- `feedback/`: screenshots.
 
-### Gold Sponsors 🥇
+Heatmaps show where **testers** clicked in the sessions they saved. They are not
+analytics from real users.
 
-<div dir="auto">
+## Tests
 
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/0/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/1/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/2/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/3/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/4/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/5/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/6/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+```bash
+cd issue-server && npm test                  # issue server API tests
+cd packages/web-extension && yarn test       # report and issue detection tests
+```
 
-</div>
+## Repository layout
 
-### Silver Sponsors 🥈
+| Path                                                                                                                                                         | Contents                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| [issue-server/](issue-server/)                                                                                                                               | Local dashboard and API ([details](issue-server/README.md)) |
+| [packages/web-extension/](packages/web-extension/)                                                                                                           | Chrome / Firefox extension                                  |
+| [packages/rrweb](packages/rrweb/), [packages/record](packages/record/), [packages/replay](packages/replay/), [packages/rrweb-player](packages/rrweb-player/) | rrweb recording and replay libraries                        |
+| [packages/plugins/](packages/plugins/)                                                                                                                       | rrweb console and network plugins                           |
+| [docs/](docs/)                                                                                                                                               | rrweb internal design notes                                 |
 
-<div dir="auto">
+## Built on rrweb
 
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/0/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/1/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/2/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/3/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/4/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/5/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/6/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+This repository is a fork of [rrweb](https://github.com/rrweb-io/rrweb) ("record and replay
+the web"). The recording, snapshot and replay packages come from upstream. For how
+they work, see the [rrweb guide](https://rrweb.com/docs/guide) and the design notes on
+[serialization](./docs/serialization.md), [incremental snapshots](./docs/observer.md),
+[replay](./docs/replay.md) and the [sandbox](./docs/sandbox.md).
 
-</div>
+## License
 
-### Bronze Sponsors 🥉
-
-<div dir="auto">
-
-<a href="https://opencollective.com/rrweb/tiers/sponsors/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/0/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/1/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/2/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/3/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/4/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/5/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/6/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/7/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/7/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/sponsors/8/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/8/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-
-</div>
-
-### Backers
-
-<a href="https://opencollective.com/rrweb#sponsor" rel="nofollow"><img src="https://opencollective.com/rrweb/tiers/backers.svg?avatarHeight=36"></a>
-
-## Core Team Members
-
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/juice10">
-        <img
-          src="https://avatars.githubusercontent.com/u/4106?s=100"
-          width="100px;"
-          alt="Justin Halsall"
-        />
-        <br /><sub><b>Juice10</b></sub>
-        <br /><sub>open for rrweb consulting</sub>
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://github.com/eoghanmurray">
-        <img
-          src="https://avatars.githubusercontent.com/u/156780?s=100"
-          width="100px;"
-          alt=""
-        />
-        <br /><sub><b>eoghanmurray</b></sub>
-        <br /><br />
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://github.com/YunFeng0817">
-        <img
-          src="https://avatars.githubusercontent.com/u/27533910?s=100"
-          width="100px;"
-          alt=""
-        />
-        <br /><sub><b>Yun Feng</b></sub>
-        <br /><br />
-      </a>
-    </td>
-  </tr>
-</table>
-
-## Who's using rrweb?
-
-<table>
-  <tr>
-    <td align="center">
-      <a href="http://www.smartx.com/" target="_blank">
-        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/HEAD/static/logos/smartx.png" alt="SmartX">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://posthog.com?utm_source=rrweb&utm_medium=sponsorship&utm_campaign=open-source-sponsorship" target="_blank">
-        <img width="195px" src="https://rrweb.com/posthog.png" alt="PostHog">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://statcounter.com/session-replay/" target="_blank">
-        <img width="195px" src="https://statcounter.com/images/logo-statcounter-arc-blue.svg">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://recordonce.com/" target="_blank">
-        <img width="195px" alt="Smart screen recording for SaaS" src="https://uploads-ssl.webflow.com/5f3d133183156245630d4446/5f3d1940abe8db8612c23521_Record-Once-logo-554x80px.svg">
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <a href="https://sentry.io" target="_blank">
-        <img width="195px" src="https://rrweb.com/sentry.png" alt="Sentry">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://www.pendo.io" target="_blank">
-        <img width="195px" src="https://rrweb.com/pendo.png" alt="Pendo">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://mixpanel.com" target="_blank">
-        <img width="195px" src="https://rrweb.com/mixpanel.png" alt="Mixpanel">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://www.datadoghq.com" target="_blank">
-        <img width="195px" src="https://rrweb.com/datadog.png" alt="Datadog">
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <a href="https://amplitude.com" target="_blank">
-        <img width="195px" src="https://rrweb.com/amplitude.png" alt="Amplitude">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://newrelic.com" target="_blank">
-        <img width="195px" src="https://rrweb.com/new%20relic.png" alt="New Relic">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://cux.io" target="_blank">
-        <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://cux.io/cux-logo.svg">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://remsupp.com" target="_blank">
-        <img style="padding: 8px" alt="Remote Access & Co-Browsing" width="195px" src="https://remsupp.com/images/logo.png">
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <a href="https://highlight.io" target="_blank">
-        <img style="padding: 8px" alt="The open source, fullstack Monitoring Platform." width="195px" src="https://github.com/highlight/highlight/raw/main/highlight.io/public/images/logo.png">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://analyzee.io" target="_blank">
-        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://analyzee.io/img/analyzee-main-logo.webp">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://requestly.io" target="_blank">
-        <img style="padding: 8px" alt="Intercept, Modify, Record & Replay HTTP Requests." width="195px" src="https://github.com/requestly/requestly/assets/16779465/652552db-c867-44cb-9bb5-94a2026e04ca">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://gleap.io" target="_blank">
-        <img style="padding: 8px" alt="In-app bug reporting & customer feedback platform." width="195px" src="https://assets-global.website-files.com/6506f3f29c68b1724807619d/6506f56010237164c6306591_GleapLogo.svg">
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <a href="https://uxwizz.com" target="_blank">
-        <img style="padding: 8px" alt="Self-hosted website analytics with heatmaps and session recordings." width="195px" src="https://github.com/UXWizz/public-files/raw/main/assets/logo.png">
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://www.howdygo.com" target="_blank">
-        <img style="padding: 8px" alt="Interactive product demos for small marketing teams" width="195px" src="https://assets-global.website-files.com/650afb446f1dd5bd410f00cc/650b2cec6188ff54dd9b01e1_Logo.svg">
-      </a>
-    </td>
-  </tr>
-</table>
+MIT. See [LICENSE](LICENSE). rrweb is © its contributors under the same license.
